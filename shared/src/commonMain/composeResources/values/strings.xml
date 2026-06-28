@@ -19,5 +19,10 @@
     <string name="fire_year">FIRE Year: %1$s</string>
     <string name="success_rate">Success: %1$s</string>
     <string name="average_capital">Average Initial Capital:</string>
+    <string name="simulation_parameters">Simulation Parameters</string>
+    <string name="num_simulations">Number of Simulations</string>
+    <string name="volatility">Volatility</string>
+    <string name="inflation">Inflation</string>
+    <string name="pension_from">Pension from</string>
     <string name="html_title">Alternative FIRE Simulator</string>
 </resources>

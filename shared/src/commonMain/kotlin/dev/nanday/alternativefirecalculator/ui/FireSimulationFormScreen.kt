@@ -165,7 +165,7 @@ fun RepetitionsDropdown(
             value = formatThousands(selected.toLong()),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Numero di simulazioni") },
+            label = { Text(stringResource(Res.string.num_simulations)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
             modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true).fillMaxWidth()

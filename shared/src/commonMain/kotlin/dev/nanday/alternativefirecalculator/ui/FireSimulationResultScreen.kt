@@ -3,6 +3,7 @@ package dev.nanday.alternativefirecalculator.ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
 import androidx.compose.foundation.Canvas
@@ -66,6 +67,10 @@ fun FireSimulationResultScreen(
                             SimulationCard(model) {
                                 selectedModel = model
                             }
+                        }
+
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            ParametersSummaryCard(state.originalParameters)
                         }
                     }
                 } else {
@@ -334,6 +339,66 @@ fun SimulationChart(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun ParametersSummaryCard(params: FireSimulationParameters) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(Res.string.simulation_parameters),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                ParameterItem(stringResource(Res.string.initial_capital), "${formatThousands(params.initialCapital.toLong())} €")
+                ParameterItem(stringResource(Res.string.yearly_income), "${formatThousands(params.yearlyIncomeInTodayEuros.toLong())} €")
+                ParameterItem(stringResource(Res.string.yearly_expenses), "${formatThousands(params.yearlyExpensesInTodayEuros.toLong())} €")
+                ParameterItem(stringResource(Res.string.expected_return), "${((params.expectedReturnOnInvestmentMultiplier - 1.0) * 100).toInt()}%")
+                ParameterItem(stringResource(Res.string.volatility), "${(params.expectedVolatility * 100).toInt()}%")
+                ParameterItem(stringResource(Res.string.inflation), "${((params.expectedInflationMultiplier - 1.0) * 100).toInt()}%")
+                ParameterItem(stringResource(Res.string.pension_from), params.pensionYear.toString())
+                ParameterItem(stringResource(Res.string.pension_income), "${formatThousands(params.pensionMonthlyIncomeInTodayEuros.toLong())} €")
+                ParameterItem(stringResource(Res.string.death_year), params.expectedYearOfDeath.toString())
+                ParameterItem(stringResource(Res.string.num_simulations), formatThousands(params.repetitions.toLong()))
+            }
+        }
+    }
+}
+
+@Composable
+fun ParameterItem(label: String, value: String) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
