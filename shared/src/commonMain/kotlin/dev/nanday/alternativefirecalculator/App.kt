@@ -1,39 +1,30 @@
 package dev.nanday.alternativefirecalculator
 
-import alternativefirecalculator.shared.generated.resources.Res
-import alternativefirecalculator.shared.generated.resources.arrow_back
-import alternativefirecalculator.shared.generated.resources.dark_mode
-import alternativefirecalculator.shared.generated.resources.fire
-import alternativefirecalculator.shared.generated.resources.light_mode
+import alternativefirecalculator.shared.generated.resources.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.nanday.alternativefirecalculator.models.FireSimulationParameters
 import dev.nanday.alternativefirecalculator.ui.FireSimulationFormScreen
 import dev.nanday.alternativefirecalculator.ui.FireSimulationResultScreen
 import dev.nanday.alternativefirecalculator.ui.theme.AppTheme
+import org.jetbrains.compose.resources.LocalResourceReader
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +32,9 @@ import org.jetbrains.compose.resources.painterResource
 fun App() {
     val systemIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(systemIsDark) }
+    
+    val platform = remember { getPlatform() }
+    var currentLanguage by remember { mutableStateOf(if (platform.language.startsWith("it")) "it" else "en") }
 
     AppTheme(useDarkTheme = isDarkTheme) {
         var currentParameters by remember { mutableStateOf<FireSimulationParameters?>(null) }
@@ -57,9 +51,11 @@ fun App() {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "Simulazione FIRE",
+                                stringResource(Res.string.app_title),
                                 style = MaterialTheme.typography.headlineMedium
                             )
+
+                            Spacer(modifier = Modifier.width(8.dp))
 
                             Icon(
                                 painter = painterResource(Res.drawable.fire),
@@ -71,7 +67,7 @@ fun App() {
                             )
 
                             Text(
-                                "by Guido Cardinali (nanday.dev)",
+                                stringResource(Res.string.author_tag),
                                 style = MaterialTheme.typography.bodySmall
                             )
 
@@ -81,7 +77,7 @@ fun App() {
                             ) {
                                 Icon(
                                     painter = painterResource(if (isDarkTheme) Res.drawable.light_mode else Res.drawable.dark_mode),
-                                    contentDescription = if (isDarkTheme) "Imposta light mode" else "Imposta dark mode"
+                                    contentDescription = if (isDarkTheme) stringResource(Res.string.set_light_mode) else stringResource(Res.string.set_dark_mode)
                                 )
                             }
                         }
@@ -96,7 +92,7 @@ fun App() {
                             ) {
                                 Icon(
                                     painter = painterResource(Res.drawable.arrow_back),
-                                    contentDescription = "indietro"
+                                    contentDescription = stringResource(Res.string.back)
                                 )
                             }
                         }
@@ -120,10 +116,33 @@ fun App() {
                 }
 
                 Text(
-                    "Disclaimer: Dati, stime, rendimenti, simulazioni e calcoli riportati potrebbero contenere errori, imprecisioni o semplificazioni e non sono garantiti né necessariamente aggiornati o veritieri. Prima di effettuare qualsiasi investimento valuta autonomamente i rischi e consulta un professionista abilitato.",
+                    stringResource(Res.string.disclaimer),
                     modifier = Modifier.padding(10.dp)
                 )
             }
         }
     }
+}
+
+@Composable
+fun LanguageFlag(
+    painter: androidx.compose.ui.graphics.painter.Painter,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Image(
+        painter = painter,
+        contentDescription = null,
+        modifier = Modifier
+            .size(24.dp)
+            .clip(CircleShape)
+            .border(
+                width = if (isSelected) 2.dp else 0.dp,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                shape = CircleShape
+            )
+            .clickable(onClick = onClick)
+            .pointerHoverIcon(PointerIcon.Hand),
+        contentScale = ContentScale.Crop
+    )
 }

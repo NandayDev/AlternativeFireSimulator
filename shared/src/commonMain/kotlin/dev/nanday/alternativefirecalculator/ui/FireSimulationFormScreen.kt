@@ -13,7 +13,9 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import alternativefirecalculator.shared.generated.resources.*
 import dev.nanday.alternativefirecalculator.models.FireSimulationParameters
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun FireSimulationFormScreen(
@@ -31,14 +33,14 @@ fun FireSimulationFormScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         FormField(
-            label = "Investiti oggi (€)",
+            label = stringResource(Res.string.initial_capital),
             value = uiState.initialCapital,
             onValueChange = viewModel::onInitialCapitalChange,
             isError = uiState.initialCapitalError
         )
         
         FormField(
-            label = "Reddito Annuale Netto (Oggi €)",
+            label = stringResource(Res.string.yearly_income),
             value = uiState.yearlyIncomeInTodayEuros,
             onValueChange = viewModel::onYearlyIncomeChange,
             isError = uiState.yearlyIncomeError
@@ -49,25 +51,25 @@ fun FireSimulationFormScreen(
                 checked = uiState.shouldAdjustIncomeToInflation,
                 onCheckedChange = viewModel::onAdjustIncomeToInflationChange
             )
-            Text("Adegua reddito all'inflazione", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(Res.string.adjust_income), style = MaterialTheme.typography.bodyMedium)
         }
 
         DropdownField(
-            label = "Ritorno Atteso (%)",
+            label = stringResource(Res.string.expected_return),
             selected = uiState.expectedReturnPercent,
             options = (1..20).toList(),
             onOptionSelected = viewModel::onExpectedReturnChange
         )
 
         DropdownField(
-            label = "Volatilità Attesa (%)",
+            label = stringResource(Res.string.expected_volatility),
             selected = uiState.expectedVolatilityPercent,
             options = (0..30).toList(),
             onOptionSelected = viewModel::onVolatilityChange
         )
 
         DropdownField(
-            label = "Inflazione Attesa (%)",
+            label = stringResource(Res.string.expected_inflation),
             selected = uiState.expectedInflationPercent,
             options = (0..15).toList(),
             onOptionSelected = viewModel::onInflationChange
@@ -76,28 +78,28 @@ fun FireSimulationFormScreen(
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         FormField(
-            label = "Spese Annuali Ordinarie (Oggi €)",
+            label = stringResource(Res.string.yearly_expenses),
             value = uiState.yearlyExpensesInTodayEuros,
             onValueChange = viewModel::onYearlyExpensesChange,
             isError = uiState.yearlyExpensesError
         )
         
         FormField(
-            label = "Anno Inizio Pensione Statale",
+            label = stringResource(Res.string.pension_year),
             value = uiState.pensionYear,
             onValueChange = viewModel::onPensionYearChange,
             isError = uiState.pensionYearError
         )
         
         FormField(
-            label = "Pensione Mensile Netta (Oggi €)",
+            label = stringResource(Res.string.pension_income),
             value = uiState.pensionMonthlyIncomeInTodayEuros,
             onValueChange = viewModel::onPensionIncomeChange,
             isError = uiState.pensionMonthlyIncomeError
         )
         
         FormField(
-            label = "Anno Decesso Previsto",
+            label = stringResource(Res.string.death_year),
             value = uiState.expectedYearOfDeath,
             onValueChange = viewModel::onYearOfDeathChange,
             isError = uiState.expectedYearOfDeathError
@@ -116,7 +118,7 @@ fun FireSimulationFormScreen(
                 .fillMaxWidth()
                 .pointerHoverIcon(PointerIcon.Hand)
         ) {
-            Text("Avvia Simulazione")
+            Text(stringResource(Res.string.start_simulation))
         }
     }
 }

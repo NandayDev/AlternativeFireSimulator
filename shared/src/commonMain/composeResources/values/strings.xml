@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_title">FIRE Simulation</string>
+    <string name="author_tag">by Guido Cardinali (nanday.dev)</string>
+    <string name="set_light_mode">Set light mode</string>
+    <string name="set_dark_mode">Set dark mode</string>
+    <string name="back">Back</string>
+    <string name="disclaimer">Disclaimer: Data, estimates, yields, simulations, and calculations reported may contain errors, inaccuracies, or simplifications and are not guaranteed nor necessarily updated or true. Before making any investment, independently evaluate the risks and consult a qualified professional.</string>
+    <string name="initial_capital">Invested today (€)</string>
+    <string name="yearly_income">Net Annual Income (Today €)</string>
+    <string name="adjust_income">Adjust income to inflation</string>
+    <string name="expected_return">Expected Return (%)</string>
+    <string name="expected_volatility">Expected Volatility (%)</string>
+    <string name="expected_inflation">Expected Inflation (%)</string>
+    <string name="yearly_expenses">Ordinary Annual Expenses (Today €)</string>
+    <string name="pension_year">State Pension Start Year</string>
+    <string name="pension_income">Net Monthly Pension (Today €)</string>
+    <string name="death_year">Expected Year of Death</string>
+    <string name="start_simulation">Start Simulation</string>
+    <string name="fire_year">FIRE Year: %1$s</string>
+    <string name="success_rate">Success: %1$s</string>
+    <string name="average_capital">Average Initial Capital:</string>
+    <string name="html_title">Alternative FIRE Simulator</string>
+</resources>

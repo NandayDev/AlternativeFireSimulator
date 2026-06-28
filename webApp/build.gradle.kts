@@ -22,6 +22,7 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.shared)
             implementation(libs.compose.ui)
+            implementation(libs.wrappers.browser)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.compose)
         }

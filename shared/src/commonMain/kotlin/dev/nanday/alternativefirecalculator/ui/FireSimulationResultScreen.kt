@@ -15,7 +15,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import alternativefirecalculator.shared.generated.resources.*
 import dev.nanday.alternativefirecalculator.models.FireSimulationParameters
+import dev.nanday.alternativefirecalculator.utils.formatThousands
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,24 +81,26 @@ fun SimulationCard(model: FireSimulationPageUiModel) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Anno FIRE: ${model.year}",
+                text = stringResource(Res.string.fire_year, model.year),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
             Text(
-                text = "Successo: ${model.successPercentage}",
+                text = stringResource(Res.string.success_rate, model.successPercentage),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Black
             )
             Spacer(modifier = Modifier.height(8.dp))
+
             Text(
-                text = "Capitale iniziale (media):",
+                text = stringResource(Res.string.average_capital,),
                 style = MaterialTheme.typography.labelSmall,
-                color = Color.Black.copy(alpha = 0.7f)
+                color = Color.Black
             )
+
             Text(
-                text = "${model.averageCapitalAtYear.toLong()}€",
+                text = "${formatThousands(model.averageCapitalAtYear.toLong())} €",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
