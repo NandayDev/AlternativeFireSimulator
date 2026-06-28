@@ -25,7 +25,8 @@ data class FireSimulationPageUiModel(
     val minCapitalAtYear: Int,
     val maxCapitalAtYear: Int,
     val averageCapitalAtYear: Double,
-    val parameters: FireSimulationParameters
+    val parameters: FireSimulationParameters,
+    val simulationPaths: List<Map<Int, Int>>
 )
 
 sealed class FireSimulationResultUiState {
@@ -56,7 +57,7 @@ class FireSimulationResultViewModel(
         _uiState.value = FireSimulationResultUiState.Loading
         
         simulationJob = viewModelScope.launch(Dispatchers.Default) {
-            val repetitions = 10000
+            val repetitions = startingParameters.repetitions
             val yearsTotal = 30
             val uiModels = mutableListOf<FireSimulationPageUiModel>()
             val mutex = Mutex()
@@ -70,6 +71,7 @@ class FireSimulationResultViewModel(
                     val capitalAtYearList = mutableListOf<Int>()
                     var minCapitalAtYear = Int.MAX_VALUE
                     var maxCapitalAtYear = 0
+                    val simulationPaths = mutableListOf<Map<Int, Int>>()
 
                     val parametersForThisYear = startingParameters.copy(
                         lastIncomeYear = year
@@ -85,6 +87,11 @@ class FireSimulationResultViewModel(
                                     positiveSimulations++
                                 }
                                 capitalAtYear?.let { capitalAtYearList.add(it) }
+                                
+                                // Keep a sample of 100 simulations for the chart
+                                if (simulationPaths.size < 100) {
+                                    simulationPaths.add(outcome.investedAmountByYear)
+                                }
                             }.onFailure {
                                 // Ignore single simulation failure
                             }
@@ -104,7 +111,8 @@ class FireSimulationResultViewModel(
                         minCapitalAtYear = minCapitalAtYear,
                         maxCapitalAtYear = maxCapitalAtYear,
                         averageCapitalAtYear = if (capitalAtYearList.isEmpty()) 0.0 else capitalAtYearList.average(),
-                        parameters = parametersForThisYear
+                        parameters = parametersForThisYear,
+                        simulationPaths = simulationPaths
                     )
                     mutex.withLock {
                         uiModels.add(uiModel)

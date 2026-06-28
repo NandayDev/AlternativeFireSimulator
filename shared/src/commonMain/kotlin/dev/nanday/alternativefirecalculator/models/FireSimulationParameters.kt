@@ -83,7 +83,12 @@ data class FireSimulationParameters(
      *
      * Useful for Coast FIRE simulations; for Full FIRE, it's the same as `currentYear`
      */
-    val firstYearOfFullExpenses: Int
+    val firstYearOfFullExpenses: Int,
+
+    /**
+     * Number of Monte Carlo simulations to run
+     */
+    val repetitions: Int
 ) {
 
     val totalIncomeByYear: Map<Int, Int>

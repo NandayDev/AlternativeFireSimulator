@@ -19,6 +19,7 @@ data class FireSimulationFormState(
     val pensionYear: String = "2060",
     val pensionMonthlyIncomeInTodayEuros: String = "1500",
     val expectedYearOfDeath: String = "2090",
+    val repetitions: Int = 10000,
 
     // Validation flags
     val initialCapitalError: Boolean = false,
@@ -87,6 +88,10 @@ class FireSimulationFormViewModel(
         _uiState.update { it.copy(expectedYearOfDeath = value, expectedYearOfDeathError = error) }
     }
 
+    fun onRepetitionsChange(value: Int) {
+        _uiState.update { it.copy(repetitions = value) }
+    }
+
     fun submit(): FireSimulationParameters? {
         val s = _uiState.value
         if (!s.isFormValid) return null
@@ -109,7 +114,8 @@ class FireSimulationFormViewModel(
                 pensionMonthlyIncomeInTodayEuros = s.pensionMonthlyIncomeInTodayEuros.toInt(),
                 percentageOfPensionInflationIncrease = 0.8,
                 expectedYearOfDeath = s.expectedYearOfDeath.toInt(),
-                firstYearOfFullExpenses = currentYear
+                firstYearOfFullExpenses = currentYear,
+                repetitions = s.repetitions
             )
         } catch (e: Exception) {
             null

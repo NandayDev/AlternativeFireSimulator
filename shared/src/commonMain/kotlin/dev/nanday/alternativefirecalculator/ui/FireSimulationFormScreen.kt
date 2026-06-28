@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import alternativefirecalculator.shared.generated.resources.*
 import dev.nanday.alternativefirecalculator.models.FireSimulationParameters
+import dev.nanday.alternativefirecalculator.utils.formatThousands
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -105,6 +106,11 @@ fun FireSimulationFormScreen(
             isError = uiState.expectedYearOfDeathError
         )
 
+        RepetitionsDropdown(
+            selected = uiState.repetitions,
+            onOptionSelected = viewModel::onRepetitionsChange
+        )
+
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
@@ -139,6 +145,46 @@ fun FormField(
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         singleLine = true
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RepetitionsDropdown(
+    selected: Int,
+    onOptionSelected: (Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val options = listOf(2000, 4000, 6000, 8000, 10000)
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = formatThousands(selected.toLong()),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Numero di simulazioni") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true).fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(formatThousands(option.toLong())) },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
