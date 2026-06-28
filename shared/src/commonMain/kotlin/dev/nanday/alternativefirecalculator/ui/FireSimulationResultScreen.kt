@@ -18,7 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -139,6 +145,7 @@ fun SimulationDetailDialog(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SimulationChart(
     simulationPaths: List<Map<Int, Int>>,
@@ -146,8 +153,16 @@ fun SimulationChart(
 ) {
     val textMeasurer = rememberTextMeasurer()
     val labelStyle = TextStyle(color = Color.DarkGray, fontSize = 9.sp)
+    val tooltipStyle = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+    
+    var pointerOffset by remember { mutableStateOf<Offset?>(null) }
 
-    Canvas(modifier = modifier) {
+    Canvas(
+        modifier = modifier
+            .onPointerEvent(PointerEventType.Move) { pointerOffset = it.changes.first().position }
+            .onPointerEvent(PointerEventType.Enter) { pointerOffset = it.changes.first().position }
+            .onPointerEvent(PointerEventType.Exit) { pointerOffset = null }
+    ) {
         if (simulationPaths.isEmpty()) return@Canvas
 
         // White background
@@ -173,13 +188,28 @@ fun SimulationChart(
         val maxValue = (allValues.maxOrNull()?.toFloat() ?: 1000000f).coerceAtLeast(100000f)
         val valueRange = (maxValue - minValue).coerceAtLeast(1f)
 
+        // Helper to format Y values
+        fun formatY(valY: Float): String = when {
+            valY == 0f -> "0 €"
+            valY >= 1_000_000f || valY <= -1_000_000f -> {
+                val value = valY / 1_000_000f
+                val rounded = (kotlin.math.round(value * 100) / 100f)
+                if (rounded % 1 == 0f) "${rounded.toInt()}M €" else "${rounded}M €"
+            }
+            valY >= 1_000f || valY <= -1_000f -> {
+                val value = valY / 1_000f
+                val rounded = (kotlin.math.round(value * 10) / 10f)
+                if (rounded % 1 == 0f) "${rounded.toInt()}k €" else "${rounded}k €"
+            }
+            else -> "${valY.toInt()} €"
+        }
+
         // Draw Y Axis Labels and Grid Lines
         val ySteps = 5
         for (i in 0..ySteps) {
             val valY = minValue + (valueRange * i / ySteps)
             val y = paddingTop + chartHeight - (valY - minValue) / valueRange * chartHeight
             
-            // Draw grid line
             drawLine(
                 color = if (valY == 0f) Color.Gray else Color.LightGray.copy(alpha = 0.5f),
                 start = Offset(paddingLeft, y),
@@ -187,22 +217,7 @@ fun SimulationChart(
                 strokeWidth = if (valY == 0f) 1.dp.toPx() else 0.5.dp.toPx()
             )
 
-            // Draw text label
-            val labelText = when {
-                valY == 0f -> "0 €"
-                valY >= 1_000_000f || valY <= -1_000_000f -> {
-                    val value = valY / 1_000_000f
-                    val rounded = (kotlin.math.round(value * 100) / 100f)
-                    if (rounded % 1 == 0f) "${rounded.toInt()}M €" else "${rounded}M €"
-                }
-                valY >= 1_000f || valY <= -1_000f -> {
-                    val value = valY / 1_000f
-                    val rounded = (kotlin.math.round(value * 10) / 10f)
-                    if (rounded % 1 == 0f) "${rounded.toInt()}k €" else "${rounded}k €"
-                }
-                else -> "${valY.toInt()} €"
-            }
-            
+            val labelText = formatY(valY)
             val textLayoutResult = textMeasurer.measure(text = labelText, style = labelStyle)
             drawText(
                 textLayoutResult = textLayoutResult,
@@ -216,7 +231,6 @@ fun SimulationChart(
             val year = minYear + (yearRange * i / xSteps).toInt()
             val x = paddingLeft + (year - minYear).toFloat() / yearRange * chartWidth
             
-            // Draw vertical grid line
             drawLine(
                 color = Color.LightGray.copy(alpha = 0.5f),
                 start = Offset(x, paddingTop),
@@ -232,28 +246,91 @@ fun SimulationChart(
         }
 
         // Draw paths
-        simulationPaths.forEach { path ->
-            val sortedEntries = path.entries.sortedBy { it.key }
-            val points = sortedEntries.map { (year, value) ->
-                val x = paddingLeft + (year - minYear).toFloat() / yearRange * chartWidth
-                val y = paddingTop + chartHeight - (value - minValue) / valueRange * chartHeight
-                Offset(x, y)
-            }
-
-            if (points.size > 1) {
-                val hasGoneUnderwater = sortedEntries.any { it.value < 0 }
-                val color = if (hasGoneUnderwater) Color.Red else Color(0xFF4CAF50)
-
-                val strokePath = Path().apply {
-                    moveTo(points[0].x, points[0].y)
-                    for (i in 1 until points.size) {
-                        lineTo(points[i].x, points[i].y)
-                    }
+        clipRect(left = paddingLeft, top = paddingTop, right = paddingLeft + chartWidth, bottom = paddingTop + chartHeight) {
+            simulationPaths.forEach { path ->
+                val sortedEntries = path.entries.sortedBy { it.key }
+                val points = sortedEntries.map { (year, value) ->
+                    val x = paddingLeft + (year - minYear).toFloat() / yearRange * chartWidth
+                    val y = paddingTop + chartHeight - (value - minValue) / valueRange * chartHeight
+                    Offset(x, y)
                 }
-                drawPath(
-                    path = strokePath,
-                    color = color,
-                    style = Stroke(width = 2.dp.toPx())
+
+                if (points.size > 1) {
+                    val hasGoneUnderwater = sortedEntries.any { it.value < 0 }
+                    val color = if (hasGoneUnderwater) Color.Red else Color(0xFF4CAF50)
+
+                    val strokePath = Path().apply {
+                        moveTo(points[0].x, points[0].y)
+                        for (i in 1 until points.size) {
+                            lineTo(points[i].x, points[i].y)
+                        }
+                    }
+                    drawPath(
+                        path = strokePath,
+                        color = color.copy(alpha = 0.2f),
+                        style = Stroke(width = 2.dp.toPx())
+                    )
+                }
+            }
+        }
+
+        // Draw Crosshair and Tooltips
+        pointerOffset?.let { pos ->
+            if (pos.x >= paddingLeft && pos.x <= paddingLeft + chartWidth &&
+                pos.y >= paddingTop && pos.y <= paddingTop + chartHeight
+            ) {
+                // Vertical line
+                drawLine(
+                    color = Color.DarkGray,
+                    start = Offset(pos.x, paddingTop),
+                    end = Offset(pos.x, paddingTop + chartHeight),
+                    strokeWidth = 1.dp.toPx(),
+                    pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f))
+                )
+
+                // Horizontal line
+                drawLine(
+                    color = Color.DarkGray,
+                    start = Offset(paddingLeft, pos.y),
+                    end = Offset(paddingLeft + chartWidth, pos.y),
+                    strokeWidth = 1.dp.toPx(),
+                    pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f))
+                )
+
+                // Calculate values
+                val hoveredYear = (minYear + (pos.x - paddingLeft) / chartWidth * yearRange).toInt()
+                val hoveredValue = minValue + (1 - (pos.y - paddingTop) / chartHeight) * valueRange
+
+                // Tooltip X (Year)
+                val yearText = hoveredYear.toString()
+                val yearLayout = textMeasurer.measure(yearText, tooltipStyle)
+                val yearRectWidth = yearLayout.size.width + 8.dp.toPx()
+                val yearRectHeight = yearLayout.size.height + 4.dp.toPx()
+                
+                drawRect(
+                    color = Color.DarkGray,
+                    topLeft = Offset(pos.x - yearRectWidth / 2, paddingTop + chartHeight + 2.dp.toPx()),
+                    size = androidx.compose.ui.geometry.Size(yearRectWidth, yearRectHeight)
+                )
+                drawText(
+                    textLayoutResult = yearLayout,
+                    topLeft = Offset(pos.x - yearLayout.size.width / 2, paddingTop + chartHeight + 4.dp.toPx())
+                )
+
+                // Tooltip Y (Value)
+                val valueText = formatY(hoveredValue)
+                val valueLayout = textMeasurer.measure(valueText, tooltipStyle)
+                val valueRectWidth = valueLayout.size.width + 8.dp.toPx()
+                val valueRectHeight = valueLayout.size.height + 4.dp.toPx()
+
+                drawRect(
+                    color = Color.DarkGray,
+                    topLeft = Offset(paddingLeft - valueRectWidth - 2.dp.toPx(), pos.y - valueRectHeight / 2),
+                    size = androidx.compose.ui.geometry.Size(valueRectWidth, valueRectHeight)
+                )
+                drawText(
+                    textLayoutResult = valueLayout,
+                    topLeft = Offset(paddingLeft - valueLayout.size.width - 6.dp.toPx(), pos.y - valueLayout.size.height / 2)
                 )
             }
         }
